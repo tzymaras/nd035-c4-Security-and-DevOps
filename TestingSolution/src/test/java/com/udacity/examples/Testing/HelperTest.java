@@ -44,7 +44,7 @@ public class HelperTest {
 	@Test
 	public void validate_3lengthString() {
 	    List<String> empNames = Arrays.asList("sareeta", "", "Jeff","sam");
-		assertEquals(2, Helper.getStringsOfLength3(empNames));
+		assertEquals(1, Helper.getStringsOfLength3(empNames));
 	}
 	
 	/*
