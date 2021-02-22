@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] %-40.40c{1.} : %m%n%ex
+        </Property>
+    </Properties>
+
+    <Appenders>
+        <Socket name="socket" host="127.0.0.1" port="514">
+            <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8"/>
+        </Socket>
+
+        <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.example.demo" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+        </Logger>
+
+        <Logger name="splunk.logger" level="info">
+            <AppenderRef ref="socket"/>
+        </Logger>
+
+        <Root level="ERROR">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="socket" />
+        </Root>
+    </Loggers>
+</Configuration>

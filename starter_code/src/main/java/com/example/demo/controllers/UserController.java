@@ -3,19 +3,27 @@ package com.example.demo.controllers;
 import com.example.demo.model.persistence.*;
 import com.example.demo.model.persistence.repositories.*;
 import com.example.demo.model.requests.CreateUserRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-    private UserRepository userRepository;
-    private CartRepository cartRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserRepository userRepository;
+    private final CartRepository cartRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public UserController(UserRepository userRepository, CartRepository cartRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    private final Logger logger = LoggerFactory.getLogger("splunk.logger");
+
+    public UserController(
+        UserRepository userRepository,
+        CartRepository cartRepository,
+        BCryptPasswordEncoder bCryptPasswordEncoder
+    ) {
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -34,22 +42,25 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
-        User user = new User();
-        user.setUsername(createUserRequest.getUsername());
         Cart cart = new Cart();
         cartRepository.save(cart);
+
+        User user = new User();
+        user.setUsername(createUserRequest.getUsername());
         user.setCart(cart);
 
         if (createUserRequest.getPassword().length() < 7 ||
             !createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())
         ) {
-            // TODO maybe add logging
+            this.logger.info("createUser invalid password");
             return ResponseEntity.badRequest().build();
         }
 
         user.setPassword(this.bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
-
         userRepository.save(user);
+
+        this.logger.info("createUser successfully created user");
+
         return ResponseEntity.ok(user);
     }
 
