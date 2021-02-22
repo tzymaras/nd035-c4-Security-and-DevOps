@@ -7,7 +7,7 @@
     </Properties>
 
     <Appenders>
-        <Socket name="socket" host="127.0.0.1" port="514">
+        <Socket name="socket" host="splunk" port="1514">
             <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8"/>
         </Socket>
 

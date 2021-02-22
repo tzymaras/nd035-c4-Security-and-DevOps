@@ -1,2 +1,5 @@
 .idea/
-/starter_code/target/
+starter_code/target/
+/docker/opt-splunk-var/
+/docker/jenkins-data/
+/docker/opt-splunk-etc/
