@@ -4,10 +4,14 @@
         <Property name="LOG_PATTERN">
             %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] %-40.40c{1.} : %m%n%ex
         </Property>
+
+        <Property name="SPLUNK_HOST">
+            ${env:SPLUNK_HOST:-localhost}
+        </Property>
     </Properties>
 
     <Appenders>
-        <Socket name="socket" host="${env:SPLUNK_HOST:-localhost}" port="1514">
+        <Socket name="socket" host="${SPLUNK_HOST}" port="1514">
             <PatternLayout pattern="${LOG_PATTERN}" charset="UTF-8"/>
         </Socket>
 
