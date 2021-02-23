@@ -1,1 +1,4 @@
 .idea/
+docker/jenkins-data/
+docker/opt-splunk-etc/
+docker/opt-splunk-var/
