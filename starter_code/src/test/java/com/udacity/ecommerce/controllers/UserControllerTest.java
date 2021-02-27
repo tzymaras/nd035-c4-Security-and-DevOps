@@ -1,9 +1,11 @@
 package com.udacity.ecommerce.controllers;
 
+import com.udacity.ecommerce.exceptions.*;
 import com.udacity.ecommerce.model.persistence.User;
 import com.udacity.ecommerce.model.persistence.repositories.*;
 import com.udacity.ecommerce.model.requests.CreateUserRequest;
 import org.junit.*;
+import org.junit.rules.ExpectedException;
 import org.mockito.*;
 import org.springframework.http.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +17,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 public class UserControllerTest {
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Mock
     private UserRepository userRepository;
 
@@ -33,7 +38,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testFindById() {
+    public void testFindById() throws UserNotFoundException {
         User user = new User();
         user.setUsername("testUser");
         user.setPassword("testHashedPassword");
@@ -52,6 +57,7 @@ public class UserControllerTest {
         assertEquals(user.getUsername(), response.getBody().getUsername());
         assertEquals(user.getPassword(), response.getBody().getPassword());
 
+        exceptionRule.expect(UserNotFoundException.class);
         response = this.userController.findById(5L);
 
         assertNotNull(response);
@@ -60,7 +66,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testFindByUserName() {
+    public void testFindByUserName() throws UserNotFoundException {
         User user = new User();
         user.setUsername("testUser");
         user.setPassword("testHashedPassword");
@@ -77,6 +83,7 @@ public class UserControllerTest {
         assertEquals(user.getUsername(), response.getBody().getUsername());
         assertEquals(user.getPassword(), response.getBody().getPassword());
 
+        exceptionRule.expect(UserNotFoundException.class);
         response = this.userController.findByUserName(user.getUsername());
 
         assertNotNull(response);
@@ -85,7 +92,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void createUserHappyPath() {
+    public void createUserHappyPath() throws InvalidPasswordException {
         when(this.bCryptPasswordEncoder.encode("testPassword")).thenReturn("thisIsHashed");
 
         CreateUserRequest createUserRequest = new CreateUserRequest();
@@ -107,12 +114,13 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUserFailsWithNonMatchingPasswords() {
+    public void testCreateUserFailsWithNonMatchingPasswords() throws InvalidPasswordException {
         CreateUserRequest createUserRequest = new CreateUserRequest();
         createUserRequest.setUsername("test");
         createUserRequest.setPassword("testPassword");
         createUserRequest.setConfirmPassword("notTestPassword");
 
+        exceptionRule.expect(InvalidPasswordException.class);
         ResponseEntity<User> response = this.userController.createUser(createUserRequest);
 
         assertNotNull(response);

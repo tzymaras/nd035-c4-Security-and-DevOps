@@ -1,5 +1,6 @@
 package com.udacity.ecommerce.controllers;
 
+import com.udacity.ecommerce.exceptions.*;
 import com.udacity.ecommerce.model.persistence.*;
 import com.udacity.ecommerce.model.persistence.repositories.*;
 import com.udacity.ecommerce.model.requests.CreateUserRequest;
@@ -30,23 +31,27 @@ public class UserController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id) {
+    public ResponseEntity<User> findById(@PathVariable Long id) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(id);
         if (!user.isPresent()) {
-            return ResponseEntity.notFound().build();
+            throw new UserNotFoundException();
         }
 
         return ResponseEntity.of(user);
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<User> findByUserName(@PathVariable String username) {
+    public ResponseEntity<User> findByUserName(@PathVariable String username) throws UserNotFoundException {
         User user = userRepository.findByUsername(username);
-        return user == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(user);
+        if (null == user) {
+            throw new UserNotFoundException();
+        }
+
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) throws InvalidPasswordException {
         Cart cart = new Cart();
         cartRepository.save(cart);
 
@@ -57,14 +62,13 @@ public class UserController {
         if (createUserRequest.getPassword().length() < 7 ||
             !createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())
         ) {
-            this.logger.info("createUser invalid password");
-            return ResponseEntity.badRequest().build();
+            throw new InvalidPasswordException();
         }
 
         user.setPassword(this.bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
         userRepository.save(user);
 
-        this.logger.info("createUser successfully created user");
+        this.logger.info("userEvent:createdUser {}", user.getUsername());
 
         return ResponseEntity.ok(user);
     }

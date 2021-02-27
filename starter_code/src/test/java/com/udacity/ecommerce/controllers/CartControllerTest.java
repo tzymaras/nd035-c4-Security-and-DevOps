@@ -1,9 +1,11 @@
 package com.udacity.ecommerce.controllers;
 
+import com.udacity.ecommerce.exceptions.UserNotFoundException;
 import com.udacity.ecommerce.model.persistence.*;
 import com.udacity.ecommerce.model.persistence.repositories.*;
 import com.udacity.ecommerce.model.requests.ModifyCartRequest;
 import org.junit.*;
+import org.junit.rules.ExpectedException;
 import org.mockito.*;
 import org.springframework.http.*;
 
@@ -16,6 +18,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 public class CartControllerTest {
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Mock
     private UserRepository userRepository;
 
@@ -34,7 +39,7 @@ public class CartControllerTest {
     }
 
     @Test
-    public void testAddTocart() {
+    public void testAddTocart() throws UserNotFoundException {
         Item item1 = new Item();
         item1.setPrice(BigDecimal.valueOf(100L));
 
@@ -56,6 +61,7 @@ public class CartControllerTest {
             .thenReturn(Optional.of(item1))
             .thenReturn(Optional.empty());
 
+        exceptionRule.expect(UserNotFoundException.class);
         ResponseEntity<Cart> response = this.cartController.addTocart(cartRequest);
         assertNotNull(response);
         assertNull(response.getBody());
@@ -74,7 +80,7 @@ public class CartControllerTest {
     }
 
     @Test
-    public void testRemoveFromcart() {
+    public void testRemoveFromcart() throws UserNotFoundException {
         Item item = new Item();
         item.setPrice(BigDecimal.valueOf(100L));
         item.setId(1L);
@@ -105,6 +111,7 @@ public class CartControllerTest {
             .thenReturn(Optional.of(item))
             .thenReturn(Optional.empty());
 
+        exceptionRule.expect(UserNotFoundException.class);
         ResponseEntity<Cart> response = this.cartController.removeFromcart(cartRequest);
         assertNotNull(response);
         assertNull(response.getBody());

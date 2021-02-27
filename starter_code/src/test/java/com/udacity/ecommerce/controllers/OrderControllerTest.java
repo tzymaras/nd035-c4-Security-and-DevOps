@@ -1,8 +1,10 @@
 package com.udacity.ecommerce.controllers;
 
+import com.udacity.ecommerce.exceptions.UserNotFoundException;
 import com.udacity.ecommerce.model.persistence.*;
 import com.udacity.ecommerce.model.persistence.repositories.*;
 import org.junit.*;
+import org.junit.rules.ExpectedException;
 import org.mockito.*;
 import org.springframework.http.*;
 
@@ -13,6 +15,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 public class OrderControllerTest {
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Mock
     private UserRepository userRepository;
 
@@ -28,10 +33,11 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testSubmitReturnsNotFoundWhenNoUserFound() {
+    public void testSubmitReturnsNotFoundWhenNoUserFound() throws UserNotFoundException {
         when(this.userRepository.findByUsername(anyString()))
             .thenReturn(null);
 
+        exceptionRule.expect(UserNotFoundException.class);
         ResponseEntity<UserOrder> response = this.orderController.submit("testUsername");
         assertNotNull(response);
         assertNull(response.getBody());
@@ -39,7 +45,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testSubmitSucceeds() {
+    public void testSubmitSucceeds() throws UserNotFoundException {
         Cart cart = new Cart();
         cart.setItems(Arrays.asList(new Item(), new Item()));
 
@@ -56,10 +62,11 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testGetOrdersForUserFailsWhenNoUserFound() {
+    public void testGetOrdersForUserFailsWhenNoUserFound() throws UserNotFoundException {
         when(this.userRepository.findByUsername(anyString()))
             .thenReturn(null);
 
+        exceptionRule.expect(UserNotFoundException.class);
         ResponseEntity<List<UserOrder>> response = this.orderController.getOrdersForUser("testUsername");
         assertNotNull(response);
         assertNull(response.getBody());
@@ -67,7 +74,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void testGerOrdersForUserSucceeds() {
+    public void testGerOrdersForUserSucceeds() throws UserNotFoundException {
         User user = new User();
         user.setUsername("testUser");
 
